@@ -1,12 +1,11 @@
 from .data import un_norm
 from .data import classes
+import matplotlib.pyplot as plt
+from matplotlib import cm
 
 
 def view_classification(img, ps):
     """View a CIFAR image and it's predicted classes."""
-    import matplotlib.pyplot as plt
-    from matplotlib import cm
-
     orig_img = un_norm(img).permute(1, 2, 0)
 
     ps = ps.cpu().data.numpy().squeeze()

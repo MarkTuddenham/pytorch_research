@@ -3,70 +3,47 @@ import torchvision
 from torchvision import transforms
 from ..cv_utils import DatasetValidationSplitter
 
-classes = [
-    "airplane",
-    "automobile",
-    "bird",
-    "cat",
-    "deer",
-    "dog",
-    "frog",
-    "horse",
-    "ship",
-    "truck"]
-
-
 batch_size = 2**7
-# norm_mean = [0.485, 0.456, 0.406]
-# norm_std = [0.229, 0.224, 0.225]
 
-norm_mean = [0.4914, 0.4822, 0.4465]
-norm_std = [0.2023, 0.1994, 0.2010]
+norm_mean = [0.1307]
+norm_std = [0.3081]
 
 normalize = transforms.Normalize(mean=norm_mean,
                                  std=norm_std)
 
-transform_train = transforms.Compose([
-    transforms.RandomCrop(32, padding=4),
-    transforms.RandomHorizontalFlip(),
-    transforms.ToTensor(),
-    transforms.Normalize(norm_mean, norm_std),
-])
-
-transform_test = transforms.Compose([
-    transforms.ToTensor(),
-    transforms.Normalize(norm_mean, norm_std),
-])
-
 path = './data'
 
-dataset = torchvision.datasets.CIFAR10(
-    root=path,
-    train=True,
-    download=True,
-    transform=transform_train
-)
+dataset = torchvision.datasets.MNIST(root=path,
+                                     train=True,
+                                     download=True,
+                                     transform=transforms.Compose([
+                                         transforms.ToTensor(),
+                                         normalize
+                                     ]))
 
 splitter = DatasetValidationSplitter(len(dataset), 0.1)
 train_set = splitter.get_train_dataset(dataset)
 valid_set = splitter.get_val_dataset(dataset)
 
-test_set = torchvision.datasets.CIFAR10(
-    root=path,
-    train=False,
-    download=True,
-    transform=transform_test
-)
+test_set = torchvision.datasets.MNIST(root=path,
+                                      train=False,
+                                      download=True,
+                                      transform=transforms.Compose([
+                                          transforms.ToTensor(),
+                                          normalize
+                                      ]))
 
 
 def get_train_gen(batch_size=batch_size):
     """Get the generator for the train set."""
     return th.utils.data.DataLoader(
         train_set,
+        # dataset,
         pin_memory=True,
         batch_size=batch_size,
         shuffle=True,
-        num_workers=10
+        num_workers=10,
+        drop_last=False
     )
 
 
@@ -76,7 +53,7 @@ def get_valid_gen(batch_size=batch_size):
         valid_set,
         pin_memory=True,
         batch_size=batch_size,
-        shuffle=True,
+        shuffle=False,
         num_workers=10
     )
 

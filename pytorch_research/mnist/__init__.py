@@ -4,4 +4,4 @@ from .data import get_test_gen
 
 from .data import train_set
 from .data import valid_set
-from .data import test_set
+from .data import test_sets

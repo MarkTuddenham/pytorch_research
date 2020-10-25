@@ -84,7 +84,8 @@ class CNN_BN(nn.Module):
         return x
 
 
-"""ResNet with variational layers in PyTorch.
+"""
+ResNet with variational layers in PyTorch.
 
 Adapted from:
 https://github.com/kuangliu/pytorch-cifar/blob/ab908327d44bf9b1d22cd333a4466e85083d3f21/models/resnet.py
@@ -188,21 +189,26 @@ class ResNet(nn.Module):
         return out
 
 
-def ResNet18():
-    return ResNet(BasicBlock, [2, 2, 2, 2])
+class ResNet18(ResNet):
+    def __init__(self):
+        super().__init__(BasicBlock, [2, 2, 2, 2])
 
 
-def ResNet34():
-    return ResNet(BasicBlock, [3, 4, 6, 3])
+class ResNet34(ResNet):
+    def __init__(self):
+        super().__init__(BasicBlock, [3, 4, 6, 3])
 
 
-def ResNet50():
-    return ResNet(BottleneckBlock, [3, 4, 6, 3])
+class ResNet50(ResNet):
+    def __init__(self):
+        super().__init__(BottleneckBlock, [3, 4, 6, 3])
 
 
-def ResNet101():
-    return ResNet(BottleneckBlock, [3, 4, 23, 3])
+class ResNet101(ResNet):
+    def __init__(self):
+        super().__init__(BottleneckBlock, [3, 4, 23, 3])
 
 
-def ResNet152():
-    return ResNet(BottleneckBlock, [3, 8, 36, 3])
+class ResNet152(ResNet):
+    def __init__(self):
+        super().__init__(BottleneckBlock, [3, 8, 36, 3])

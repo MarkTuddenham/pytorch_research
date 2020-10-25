@@ -4,11 +4,11 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="pytorch_research",  # Replace with your own username
+    name="pytorch_research",
     version="0.0.1",
     author="Mark Tuddenham",
     author_email="mark@tudders.com",
-    description="A packed with the basics for ML research.",
+    description="A few helper functions for ML research.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/MarkTuddenham/pytorch_research",

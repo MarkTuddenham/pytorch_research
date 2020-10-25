@@ -1,4 +1,3 @@
-
 from torch import nn
 import torch.nn.functional as F
 
@@ -6,8 +5,8 @@ import torch.nn.functional as F
 class CNN(nn.Module):
     def __init__(self):
         super(CNN, self).__init__()
-        self.channels1 = 2
-        self.channels2 = 2
+        self.channels1 = 1
+        self.channels2 = 1
 
         self.conv1 = nn.Conv2d(1, self.channels1, 5, 1)
         self.conv2 = nn.Conv2d(self.channels1, self.channels2, 5, 1)
