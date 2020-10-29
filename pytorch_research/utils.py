@@ -1,6 +1,6 @@
 """Generic util functions."""
 import torch as th
-import torch.functional as F
+from torch.nn import functional as F
 
 from functools import partial
 
