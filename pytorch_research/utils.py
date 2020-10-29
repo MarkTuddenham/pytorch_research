@@ -1,5 +1,6 @@
 """Generic util functions."""
 import torch as th
+import torch.functional as F
 
 from functools import partial
 
@@ -60,6 +61,19 @@ def f1_score(tp, fp, fn):
     prec_rec_f1['f1_score'] = 2 * (prec_rec_f1['precision'] * prec_rec_f1['recall']
                                    ) / (prec_rec_f1['precision'] + prec_rec_f1['recall'])
     return prec_rec_f1
+
+
+def get_full_loss(model, testloader, device='cuda'):
+    predictions = th.zeros(0).to(device)
+    labels = th.zeros(0).type(th.LongTensor).to(device)
+    model = model.to(device)
+
+    for X, y in iter(testloader):
+        y_pred = model(X.to(device))
+        predictions = th.cat((predictions, y_pred))
+        labels = th.cat((labels, y.to(device)))
+
+    return F.cross_entropy(predictions, labels)
 
 
 def get_hessian(model, loss, device='cuda'):
