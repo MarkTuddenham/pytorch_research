@@ -15,6 +15,7 @@ from os.path import isdir
 from os.path import basename
 from os.path import getctime
 from json import dumps
+from json import dump
 from glob import glob
 
 
@@ -31,6 +32,8 @@ def save_tensor(t: th.Tensor, path: str, params: Optional[Params]) -> None:
         file_name = int(basename(last_file)) + 1
     else:
         mkdir(path)
+        with open('params.json', 'w') as f:
+            dump(params, f)
 
     th.save(t, f'{path}/{file_name}')
 
