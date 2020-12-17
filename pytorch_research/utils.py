@@ -1,10 +1,12 @@
 """Generic util functions."""
 import torch as th
 from torch.nn import functional as F
+from tqdm import tqdm
+from collections import OrderedDict
 
 from functools import partial
 
-from datetime import datetime
+# from datetime import datetime
 
 
 def printmd(s):
@@ -21,9 +23,9 @@ def get_device(no_cuda=False):
     return d
 
 
-def flatten(l):
+def flatten(lst):
     """Flatten a 2D array."""
-    return [item for sublist in l for item in sublist]
+    return [item for sublist in lst for item in sublist]
 
 
 def for_each_param(model, f):
@@ -33,10 +35,14 @@ def for_each_param(model, f):
         if p.requires_grad])
 
 
-clone_gradients = partial(for_each_param, f=lambda p: p.grad.clone().detach().flatten())
-get_gradients = partial(for_each_param, f=lambda p: p.grad.flatten())
-clone_weights = partial(for_each_param, f=lambda p: p.clone().detach().flatten())
-get_weights = partial(for_each_param, f=lambda p: p.flatten())
+clone_gradients = partial(for_each_param,
+        f=lambda p: p.grad.clone().detach().flatten())
+get_gradients = partial(for_each_param,
+        f=lambda p: p.grad.flatten())
+clone_weights = partial(for_each_param,
+        f=lambda p: p.clone().detach().flatten())
+get_weights = partial(for_each_param,
+        f=lambda p: p.flatten())
 
 
 def metrics(loss, logits, labels):
@@ -58,8 +64,9 @@ def f1_score(tp, fp, fn):
     prec_rec_f1 = {}
     prec_rec_f1['precision'] = tp / (tp + fp)
     prec_rec_f1['recall'] = tp / (tp + fn)
-    prec_rec_f1['f1_score'] = 2 * (prec_rec_f1['precision'] * prec_rec_f1['recall']
-                                   ) / (prec_rec_f1['precision'] + prec_rec_f1['recall'])
+    prec_rec_f1['f1_score'] = 2 * \
+            (prec_rec_f1['precision'] * prec_rec_f1['recall']) / \
+            (prec_rec_f1['precision'] + prec_rec_f1['recall'])
     return prec_rec_f1
 
 
@@ -89,7 +96,6 @@ def get_hessian(model, loss, device='cuda'):
 
     w_grad = th.autograd.grad(loss, w, create_graph=True)
 
-    d2_w = []
     i = 0
     for w_grad_batch in tqdm(w_grad):
         for g in tqdm(w_grad_batch.flatten(), leave=False):
@@ -100,7 +106,74 @@ def get_hessian(model, loss, device='cuda'):
     return hessian.detach()
 
 
+def get_model_param_details(
+        model,
+        input_size,
+        batch_size=-1,
+        device=th.device('cuda:0'),
+        dtypes=None):
+    """Adapted from https://github.com/sksq96/pytorch-summary/blob/011b2bd0ec7153d5842c1b37d1944fc6a7bf5feb/torchsummary/torchsummary.py"""
+    if dtypes is None:
+        dtypes = [th.FloatTensor]*len(input_size)
+
+    def register_hook(module):
+        def hook(module, input, output):
+            class_name = str(module.__class__).split(".")[-1].split("'")[0]
+            module_idx = len(summary)
+
+            m_key = "%s-%i" % (class_name, module_idx + 1)
+            summary[m_key] = OrderedDict()
+            summary[m_key]["input_shape"] = list(input[0].size())
+            summary[m_key]["input_shape"][0] = batch_size
+            if isinstance(output, (list, tuple)):
+                summary[m_key]["output_shape"] = [
+                    [-1] + list(o.size())[1:] for o in output
+                ]
+            else:
+                summary[m_key]["output_shape"] = list(output.size())
+                summary[m_key]["output_shape"][0] = batch_size
+
+            params = 0
+            if hasattr(module, "weight") and hasattr(module.weight, "size"):
+                params += th.prod(th.LongTensor(list(module.weight.size())))
+                summary[m_key]["trainable"] = module.weight.requires_grad
+            if hasattr(module, "bias") and hasattr(module.bias, "size"):
+                params += th.prod(th.LongTensor(list(module.bias.size())))
+            summary[m_key]["nb_params"] = params
+
+        if (
+            not isinstance(module, th.nn.Sequential)
+            and not isinstance(module, th.nn.ModuleList)
+        ):
+            hooks.append(module.register_forward_hook(hook))
+
+    # multiple inputs to the network
+    if isinstance(input_size, tuple):
+        input_size = [input_size]
+
+    # batch_size of 2 for batchnorm
+    x = [th.rand(2, *in_size).type(dtype).to(device=device)
+         for in_size, dtype in zip(input_size, dtypes)]
+
+    # create properties
+    summary = OrderedDict()
+    hooks = []
+
+    # register hook
+    model.apply(register_hook)
+
+    # make a forward pass
+    # print(x.shape)
+    model(*x)
+
+    # remove these hooks
+    for h in hooks:
+        h.remove()
+
+    return summary
+
 # def print(*args, **kwargs):
 #     """Custom print function that adds a time signature."""
-#     __builtins__.print(f'[{datetime.now().strftime("%Y-%m-%d %H:%M")}]', end=' ')
+#     __builtins__.print(f'[{datetime.now().strftime("%Y-%m-%d %H:%M")}]',
+#                        end=' ')
 #     return __builtins__.print(*args, **kwargs)
