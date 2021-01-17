@@ -26,6 +26,22 @@ def get_device(no_cuda=False):
 def flatten(lst):
     """Flatten a 2D array."""
     return [item for sublist in lst for item in sublist]
+    
+def get_grad(model: th.nn.Module)->th.Tensor:
+    return th.cat(
+        [p.grad.clone().detach().flatten()
+            for p in model.parameters(recurse=True)
+            if p.requires_grad])
+
+def clear_grad(model: th.nn.Module)->None:
+    for p in model.parameters(recurse=True):
+        p.grad.data.zero_()
+
+def get_params(model: th.nn.Module)->th.Tensor:
+    return th.cat(
+        [p.clone().detach().flatten()
+            for p in model.parameters(recurse=True)
+            if p.requires_grad])
 
 
 def for_each_param(model, f):
