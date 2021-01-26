@@ -23,19 +23,27 @@ Params = Dict[str, Any]
 HASH_LEN: int = 10
 
 
-def save_tensor(t: th.Tensor, path: str, params: Optional[Params]) -> None:
+def save_tensor(t: th.Tensor, path: str, params: Optional[Params]=None, interim:bool=False) -> None:
+    """Save a tensor.
+
+        Parameters:
+            t:          Tensor to save
+            path:       Place to save tensor to (includes filename)
+            interim:    Overwrite the last tensor.
+    """
     path = get_path_with_hash(path, params)
     file_name: int = 0
 
     if isdir(path):
         last_file = get_last_file(path)
-        file_name = int(basename(last_file)) + 1
+        file_name = int(basename(last_file)) + int(not interim)
     else:
         mkdir(path)
         with open(f'{path}/params.json', 'w') as f:
             dump(params, f)
 
     th.save(t, f'{path}/{file_name}')
+
 
 
 def load_tensor(path: str, params: Optional[Params]) -> th.Tensor:

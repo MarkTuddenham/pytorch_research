@@ -1,6 +1,8 @@
 from torch import nn
 import torch.nn.functional as F
 
+from fast_resnet2 import FastResNet2
+
 
 class CNN(nn.Module):
     def __init__(self):
