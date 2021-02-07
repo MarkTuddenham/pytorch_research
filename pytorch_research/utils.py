@@ -186,7 +186,17 @@ def get_model_param_details(
     for h in hooks:
         h.remove()
 
-    return summary
+    total_params = 0
+    trainable_params = 0
+
+    for layer in summary.values():
+        total_params += layer["nb_params"]
+        if "trainable" in layer and layer["trainable"] == True:
+            trainable_params += layer["nb_params"]
+
+    return {'layers': summary, 
+            'trainable_params': trainable_params,
+            'total_params': total_params}
 
 # def print(*args, **kwargs):
 #     """Custom print function that adds a time signature."""
