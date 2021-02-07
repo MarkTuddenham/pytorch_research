@@ -52,15 +52,19 @@ def load_tensor(path: str, params: Optional[Params]) -> th.Tensor:
     files = glob(f'{path}/*')
     return th.stack([th.tensor(th.load(f)) for f in files])
 
-def load_last_tensor(path: str, params: Optional[Params]) -> th.Tensor:
+def load_last_tensor(path: str, params: Optional[Params]) -> Optional[th.Tensor]:
     """Load only the last saved tensor."""
     path = get_path_with_hash(path, params)
     f = get_last_file(path)
-    return th.load(f)
+    return th.load(f) if f else None
 
 
-def get_last_file(path: str) -> str:
-    return max(glob(f'{path}/*'), key=getctime)
+def get_last_file(path: str) -> Optional[str]:
+    try:
+        path = max(glob(f'{path}/*'), key=getctime)
+    except ValueError:
+        path = None
+    return path
 
 
 def get_path_with_hash(path: str, params: Optional[Params]) -> str:
