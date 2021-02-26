@@ -18,7 +18,7 @@ def get_device(no_cuda=False):
     """Get the torch device."""
     cuda = not no_cuda and th.cuda.is_available()
     d = th.device("cuda" if cuda else "cpu")
-    print(f'Running on: {th.cuda.get_device_name(d)}')
+    print(f'Running on: {th.cuda.get_device_name(d) if cuda else "cpu"}')
 
     return d
 
