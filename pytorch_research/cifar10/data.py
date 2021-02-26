@@ -17,6 +17,7 @@ classes = [
 
 
 batch_size = 2**7
+num_workers=10
 # norm_mean = [0.485, 0.456, 0.406]
 # norm_std = [0.229, 0.224, 0.225]
 
@@ -40,55 +41,61 @@ transform_test = transforms.Compose([
 
 path = './data'
 
-dataset = torchvision.datasets.CIFAR10(
-    root=path,
-    train=True,
-    download=True,
-    transform=transform_train
-)
 
-splitter = DatasetValidationSplitter(len(dataset), 0.1)
-train_set = splitter.get_train_dataset(dataset)
-valid_set = splitter.get_val_dataset(dataset)
+def get_dataset():
+    dataset = torchvision.datasets.CIFAR10(
+        root=path,
+        train=True,
+        download=True,
+        transform=transform_train
+    )
 
-test_set = torchvision.datasets.CIFAR10(
-    root=path,
-    train=False,
-    download=True,
-    transform=transform_test
-)
+    splitter = DatasetValidationSplitter(len(dataset), 0.1)
+    train_set = splitter.get_train_dataset(dataset)
+    valid_set = splitter.get_val_dataset(dataset)
+
+    test_set = torchvision.datasets.CIFAR10(
+        root=path,
+        train=False,
+        download=True,
+        transform=transform_test
+    )
+    return train_set, valid_set, test_set
 
 
 def get_train_gen(batch_size=batch_size):
     """Get the generator for the train set."""
+    train_set, _, _ = get_dataset()
     return th.utils.data.DataLoader(
         train_set,
         pin_memory=True,
         batch_size=batch_size,
         shuffle=True,
-        num_workers=10
+        num_workers=num_workers
     )
 
 
 def get_valid_gen(batch_size=batch_size):
     """Get the generator for the validation set."""
+    _, valid_set, _ = get_dataset()
     return th.utils.data.DataLoader(
         valid_set,
         pin_memory=True,
         batch_size=batch_size,
         shuffle=True,
-        num_workers=10
+        num_workers=num_workers
     )
 
 
 def get_test_gen(batch_size=batch_size):
     """Get the generator for the test set."""
+    _, _, test_set = get_dataset()
     return th.utils.data.DataLoader(
         test_set,
         pin_memory=True,
         batch_size=batch_size,
         shuffle=False,
-        num_workers=10
+        num_workers=num_workers
     )
 
 
