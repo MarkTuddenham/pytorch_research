@@ -41,25 +41,33 @@ transform_test = transforms.Compose([
 
 path = './data'
 
+train_set = None
+valid_set = None
+test_set = None
+
+
 
 def get_dataset():
-    dataset = torchvision.datasets.CIFAR10(
-        root=path,
-        train=True,
-        download=True,
-        transform=transform_train
-    )
+    global train_set, valid_set, test_set
+    if train_set is None:
+        dataset = torchvision.datasets.CIFAR10(
+            root=path,
+            train=True,
+            download=True,
+            transform=transform_train
+        )
 
-    splitter = DatasetValidationSplitter(len(dataset), 0.1)
-    train_set = splitter.get_train_dataset(dataset)
-    valid_set = splitter.get_val_dataset(dataset)
+        splitter = DatasetValidationSplitter(len(dataset), 0.1)
+        train_set = splitter.get_train_dataset(dataset)
+        valid_set = splitter.get_val_dataset(dataset)
 
-    test_set = torchvision.datasets.CIFAR10(
-        root=path,
-        train=False,
-        download=True,
-        transform=transform_test
-    )
+        test_set = torchvision.datasets.CIFAR10(
+            root=path,
+            train=False,
+            download=True,
+            transform=transform_test
+        )
+        
     return train_set, valid_set, test_set
 
 
