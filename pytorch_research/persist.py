@@ -10,7 +10,7 @@ import torch as th
 from hashlib import sha256
 
 from base64 import b64encode
-from os import mkdir
+from os import makedirs
 from os.path import isdir
 from os.path import basename
 from os.path import getctime
@@ -23,22 +23,22 @@ Params = Dict[str, Any]
 HASH_LEN: int = 10
 
 
-def save_tensor(t: th.Tensor, path: str, params: Optional[Params]=None, interim:bool=False) -> None:
+def save_tensor(t: th.Tensor, path: str, params: Optional[Params]=None, overwrite:bool=False) -> None:
     """Save a tensor.
 
         Parameters:
             t:          Tensor to save
             path:       Place to save tensor to (includes filename)
-            interim:    Overwrite the last tensor.
+            overwrite:    Overwrite the last save.
     """
     path = get_path_with_hash(path, params)
     file_name: int = 0
 
     if isdir(path):
         last_file = get_last_file(path)
-        file_name = int(basename(last_file)) + int(not interim)
+        file_name = int(basename(last_file)) + int(not overwrite)
     else:
-        mkdir(path)
+        makedirs(path)
         with open(f'{path}/params.json', 'w') as f:
             dump(params, f)
 
