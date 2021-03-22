@@ -39,19 +39,22 @@ transform_test = transforms.Compose([
     transforms.Normalize(norm_mean, norm_std),
 ])
 
-path = './data'
+data_path = './data'
+
+def set_data_path(path):
+    global data_path
+    data_path = path
 
 train_set = None
 valid_set = None
 test_set = None
 
 
-
 def get_dataset():
     global train_set, valid_set, test_set
     if train_set is None:
         dataset = torchvision.datasets.CIFAR10(
-            root=path,
+            root=data_path,
             train=True,
             download=True,
             transform=transform_train
@@ -62,12 +65,12 @@ def get_dataset():
         valid_set = splitter.get_val_dataset(dataset)
 
         test_set = torchvision.datasets.CIFAR10(
-            root=path,
+            root=data_path,
             train=False,
             download=True,
             transform=transform_test
         )
-        
+
     return train_set, valid_set, test_set
 
 
