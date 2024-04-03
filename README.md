@@ -1,5 +1,7 @@
 # PyTorch Research
 
+A collection of helper functions used for my PhD experiments.
+
 ## Install
 
 ```bash
